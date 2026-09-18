@@ -1,0 +1,4 @@
+Classical CV Baseline Results
+========================================
+SVM: accuracy=0.393, macro_f1=0.382, best_params={'svm__C': 10, 'svm__gamma': 0.01}
+kNN: accuracy=0.299, macro_f1=0.288, best_params={'knn__n_neighbors': 11}
