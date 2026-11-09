@@ -1,0 +1,21 @@
+# Copy this file to data/annotations/data.yaml and edit the dataset path.
+# Expected layout:
+# data/annotations/
+#   train/images, train/labels
+#   valid/images, valid/labels
+#   test/images,  test/labels  (optional)
+#
+# YOLO labels must use: class_id x_center y_center width height
+# with normalized coordinates in the range [0, 1].
+#
+# This project detects F1 cars as one object class. If your chosen dataset
+# contains multiple classes, update "names" to match its class IDs.
+
+path: /absolute/path/to/f1-vision-pipeline/data/annotations
+train: train/images
+val: valid/images
+# Uncomment only when you have a labeled test split:
+# test: test/images
+
+names:
+  0: car
