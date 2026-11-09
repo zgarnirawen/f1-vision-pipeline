@@ -1807,3 +1807,38 @@ python src/evaluate_detector.py \
 Only use `--split test` after adding a labeled `test` split to the dataset YAML. Keep the test split untouched during model selection; use validation results for tuning and report final test metrics once.
 
 **Important:** no detection dataset, trained YOLO weights, or detection metrics are included in this repository yet. Do not report target metrics as achieved results. The detection phase remains incomplete until training and evaluation have been run on real labeled data.
+
+
+## Prepare the Roboflow detection dataset
+
+The supplied Roboflow archive contains 116 images (73 train, 20 validation, 23 test) and one class, `Formula-1-cars`. Its labels include both ordinary YOLO bounding-box rows and polygon segmentation rows. The detector training workflow in this repository expects bounding boxes, so convert the mixed export before training.
+
+Extract the archive locally so that the input folder contains `data.yaml`, `train/`, `valid/`, and `test/`. Then run:
+
+```bash
+python src/prepare_detection_dataset.py \
+  --input data/annotations \
+  --output data/processed/detection
+```
+
+The preparation script:
+- checks image/label filename pairs and class IDs;
+- preserves existing YOLO bounding boxes;
+- converts polygon outlines into their enclosing axis-aligned YOLO boxes;
+- validates normalized coordinates and positive box dimensions;
+- writes a new dataset YAML without modifying the original export.
+
+To intentionally rebuild an existing output directory, add `--overwrite`.
+
+Then train on the prepared dataset:
+
+```bash
+python src/train_detector.py \
+  --data data/processed/detection/data.yaml \
+  --model yolo26n.pt \
+  --epochs 50 \
+  --imgsz 640 \
+  --batch 8
+```
+
+The supplied dataset is small (116 images), so treat the first run as a baseline rather than evidence of generalization. Inspect training curves and predictions, and use the test split only for final evaluation after model selection.
