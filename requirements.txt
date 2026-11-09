@@ -1,0 +1,24 @@
+# Install a PyTorch build matching your OS and CUDA version first:
+# https://pytorch.org/get-started/locally/
+torch
+torchvision
+
+# Classification and computer vision
+timm
+opencv-python
+Pillow
+numpy
+pandas
+scikit-learn
+matplotlib
+
+# YOLO26 detection and tracking
+ultralytics
+PyYAML
+
+# Planned telemetry, API, and demo layers
+fastf1
+fastapi
+uvicorn[standard]
+python-multipart
+streamlit
