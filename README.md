@@ -1731,3 +1731,79 @@ It is:
 > "I built and evaluated a complete computer-vision pipeline that compares classical CV against transfer learning, detects and tracks F1 cars in video, classifies their teams, fuses telemetry data, exposes inference through an API, and packages the system for deployment."
 
 That is the intended scope of the project.
+
+
+---
+
+# 43. YOLO26 Detection — Training Code
+
+The first detection-phase code is now available on the `feature/yolo26-detection` branch.
+
+Added files:
+
+- `src/train_detector.py`: trains a YOLO26 detector, saves the best checkpoint, and runs a final validation pass.
+- `src/evaluate_detector.py`: evaluates saved weights on the validation or test split and exports measured metrics as JSON.
+- `configs/f1_detection.yaml.example`: template for the YOLO dataset configuration.
+- `requirements.txt`: project dependencies for classification, detection, telemetry, API, and demo work.
+
+## Prepare the detection dataset
+
+The training code does not create annotations. First, obtain a dataset you are permitted to use and export it in Ultralytics YOLO detection format:
+
+```text
+data/annotations/
+├── train/
+│   ├── images/
+│   └── labels/
+├── valid/
+│   ├── images/
+│   └── labels/
+└── data.yaml
+```
+
+Each image must have a matching YOLO label file. For a single car class, each label row has:
+
+```text
+0 x_center y_center width height
+```
+
+Coordinates must be normalized to the range 0–1. Check the dataset's class IDs and names before training; do not assume every exported dataset uses class ID 0 for cars.
+
+Copy `configs/f1_detection.yaml.example` to `data/annotations/data.yaml` and set the `path` field to the actual dataset root on your machine.
+
+## Install dependencies
+
+Create and activate a virtual environment, then install a PyTorch build appropriate for your operating system and CUDA setup from the official PyTorch selector. After that:
+
+```bash
+pip install -r requirements.txt
+```
+
+## Train YOLO26 nano
+
+```bash
+python src/train_detector.py \
+  --data data/annotations/data.yaml \
+  --model yolo26n.pt \
+  --epochs 50 \
+  --imgsz 640 \
+  --batch 16
+```
+
+On a machine with no CUDA GPU, the script selects CPU automatically. Training on CPU may be very slow; a Colab or Kaggle GPU runtime is recommended. Reduce `--batch` if you run out of GPU memory.
+
+The best checkpoint and Ultralytics training artifacts are saved under `runs/detect/f1-yolo26n/` by default. The script writes a `validation_summary.json` file containing measured precision, recall, mAP50, mAP50-95, and the reported per-image timing breakdown.
+
+## Evaluate a checkpoint
+
+```bash
+python src/evaluate_detector.py \
+  --weights runs/detect/f1-yolo26n/weights/best.pt \
+  --data data/annotations/data.yaml \
+  --split val \
+  --output outputs/detection_validation_metrics.json
+```
+
+Only use `--split test` after adding a labeled `test` split to the dataset YAML. Keep the test split untouched during model selection; use validation results for tuning and report final test metrics once.
+
+**Important:** no detection dataset, trained YOLO weights, or detection metrics are included in this repository yet. Do not report target metrics as achieved results. The detection phase remains incomplete until training and evaluation have been run on real labeled data.
