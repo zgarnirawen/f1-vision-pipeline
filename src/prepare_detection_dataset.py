@@ -53,6 +53,9 @@ def parse_label_line(line: str, label_path: Path, line_number: int):
     if class_id < 0:
         raise ValueError(f"{location}: class ID must be non-negative")
 
+    if any(value < 0 or value > 1 for value in coordinates):
+        raise ValueError(f"{location}: source coordinates must be normalized within [0, 1]")
+
     if len(coordinates) == 4:
         # Standard YOLO detection: cx, cy, width, height.
         cx, cy, width, height = coordinates
